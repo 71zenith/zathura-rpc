@@ -36,8 +36,8 @@ while True:
         small_image = "weeb",
         small_text = "yes, im a weeb",
         start = start,
-        details = info.split('\n')[0] ,
-        state = info.split('\n')[1] ,
+        details = info.split('\n')[0],
+        state = info.split('\n')[1],
     )
     time.sleep(15)
 #+end_src
