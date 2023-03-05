@@ -5,6 +5,7 @@
 
 #+begin_src sh :tangle rpc.sh
 #!/bin/sh
+
 pid=$(pidof zathura) || exit 1
 data=$(gdbus introspect --session --dest "org.pwmt.zathura.PID-$pid" --object-path /org/pwmt/zathura -p | sed -n -e "s/^.*filename = '\([^']*\)'.*$/\1/p" -e "s/^.*pagenumber = \([0-9]*\).*$/\1/p" -e "s/^.*numberofpages = \([0-9]*\).*$/\1/p")
 filename=$(basename "$(printf "%s" "$data" | sed -n 1p)")
@@ -15,6 +16,8 @@ printf "Page %s of %s\n" "$lineno" "$totalln"
 #+end_src
 
 #+begin_src python :tangle main.py
+#!/usr/bin/env python3
+
 from pypresence import Presence
 from subprocess import check_output
 import time
