@@ -1,6 +1,8 @@
 #+TITLE: zathura rpc
 #+AUTHOR: polarbear
 
+* only proceed if u don't mind severe autism
+
 #+begin_src sh :tangle rpc.sh
 #!/bin/sh
 pid=$(pidof zathura) || exit 1
