@@ -3,22 +3,27 @@
 
 * only proceed if u don't mind severe autism
 
-#+begin_src sh :tangle rpc.sh
-#!/bin/sh
-pid=$(pidof zathura) || exit 1
-data=$(gdbus introspect --session --dest "org.pwmt.zathura.PID-$pid" --object-path /org/pwmt/zathura -p | sed -n -e "s/^.*filename = '\([^']*\)'.*$/\1/p" -e "s/^.*pagenumber = \([0-9]*\).*$/\1/p" -e "s/^.*numberofpages = \([0-9]*\).*$/\1/p")
-filename=$(basename "$(printf "%s" "$data" | sed -n 1p)")
-lineno=$(printf "%s" "$data" | sed -n 2p)
-totalln=$(printf "%s" "$data" | sed -n 3p)
-printf "%s\n" "$filename" | sed 's/ - .*//g'
-printf "Page %s of %s\n" "$lineno" "$totalln"
-#+end_src
-
 #+begin_src python :tangle main.py
 from pypresence import Presence
-from subprocess import check_output
 import time
 import sys
+import subprocess
+import os
+import re
+
+try:
+    pid = subprocess.check_output(['pidof', 'zathura']).decode().strip()
+except subprocess.CalledProcessError:
+    exit(1)
+
+output = subprocess.check_output(['gdbus', 'introspect', '--session', '--dest', f'org.pwmt.zathura.PID-{pid}', '--object-path', '/org/pwmt/zathura', '-p']).decode()
+
+filename = re.findall(r"filename = '([^']*)'", output)[0]
+lineno = re.findall(r"pagenumber = ([0-9]*)", output)[0]
+totalln = re.findall(r"numberofpages = ([0-9]*)", output)[0]
+
+filename = os.path.basename(filename.split(' - ')[0])
+line_info = (f"Page {lineno} of {totalln}")
 
 start = int(time.time())
 client_id = "1081997908985008138"
@@ -27,7 +32,7 @@ RPC.connect()
 
 while True:
     try:
-        info = check_output([ 'sh' , './rpc.sh']).decode('utf-8')
+        info = subprocess.check_output([ 'sh' , './rpc.sh']).decode('utf-8')
     except:
         sys.exit(1)
     RPC.update(
@@ -36,8 +41,8 @@ while True:
         small_image = "weeb",
         small_text = "yes, im a weeb",
         start = start,
-        details = info.split('\n')[0],
-        state = info.split('\n')[1],
+        details = filename,
+        state = line_info,
     )
     time.sleep(15)
 #+end_src
