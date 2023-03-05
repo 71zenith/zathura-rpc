@@ -4,6 +4,8 @@
 * only proceed if u don't mind severe autism
 
 #+begin_src python :tangle main.py
+#!/usr/bin/env python3
+
 from pypresence import Presence
 import time
 import subprocess
