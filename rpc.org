@@ -6,20 +6,18 @@
 
 - requires =pypresence=
 - run it after zathura starts
-- remove the =split= from filename ( for my personal use )
 - will exit if zathura not running ( dont like behaviour; change it )
 
-#+begin_src python :tangle main.py
-#!/usr/bin/env python3
+#+begin_src python :tangle main.py :shebang "#!/usr/bin/env python3"
 
 from pypresence import Presence
 import time
 import subprocess
-import os
 import re
 
-start = int(time.time())
+start = time.time()
 client_id = "1081997908985008138"
+
 RPC = Presence(client_id)
 RPC.connect()
 
@@ -27,7 +25,7 @@ while True:
     try:
         pid = subprocess.check_output(['pidof', 'zathura']).decode().strip()
     except subprocess.CalledProcessError:
-        exit(1)
+        exit('no instance found')
 
     output = subprocess.check_output(['gdbus', 'introspect', '--session', '--dest', f'org.pwmt.zathura.PID-{pid}', '--object-path', '/org/pwmt/zathura', '-p']).decode()
 
@@ -35,7 +33,9 @@ while True:
     lineno = re.findall(r"pagenumber = ([0-9]*)", output)[0]
     totalln = re.findall(r"numberofpages = ([0-9]*)", output)[0]
 
-    filename = os.path.basename(filename.split(' - ')[0])
+    # uncomment the next line and remove the one after that
+    # filename = re.findall(r'[^\/]+(?=\.)',filename)[0]
+    filename = re.findall(r'[^\/]+(?=\ - )',filename)[0]
     line_info = (f"Page {lineno} of {totalln}")
 
     RPC.update(
