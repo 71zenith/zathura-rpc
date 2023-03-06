@@ -1,12 +1,16 @@
 #+TITLE: zathura rpc
+#+DESCRIPTION: discord rich presence for zathura
 #+AUTHOR: polarbear
 #+EMAIL: 71zenith@proton.me
 
 * only proceed if u don't mind severe autism
 
+[[file:preview.png]]
+
 - requires =pypresence=
 - runs independently
 - will check for =zathura= every 15 seconds
+- if it doesnt work, then it doesnt :pepeshrug:
 
 #+begin_src python :tangle main.py :shebang "#!/usr/bin/env python3"
 
