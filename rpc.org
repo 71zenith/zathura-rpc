@@ -1,7 +1,13 @@
 #+TITLE: zathura rpc
 #+AUTHOR: polarbear
+#+EMAIL: 71zenith@proton.me
 
 * only proceed if u don't mind severe autism
+
+- requires =pypresence=
+- run it after zathura starts
+- remove the =split= from filename ( for my personal use )
+- will exit if zathura not running ( dont like behaviour; change it )
 
 #+begin_src python :tangle main.py
 #!/usr/bin/env python3
