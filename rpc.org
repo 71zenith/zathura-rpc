@@ -5,8 +5,8 @@
 * only proceed if u don't mind severe autism
 
 - requires =pypresence=
-- run it after zathura starts
-- will exit if zathura not running ( dont like behaviour; change it )
+- runs independently
+- will check for =zathura= every 15 seconds
 
 #+begin_src python :tangle main.py :shebang "#!/usr/bin/env python3"
 
@@ -23,9 +23,11 @@ RPC.connect()
 
 while True:
     try:
-        pid = subprocess.check_output(['pidof', 'zathura']).decode().strip()
+        pid = subprocess.check_output(['pidof', 'zathura']).decode().split()[0]
     except subprocess.CalledProcessError:
-        exit('no instance found')
+        RPC.clear()
+        time.sleep(15)
+        continue
 
     output = subprocess.check_output(['gdbus', 'introspect', '--session', '--dest', f'org.pwmt.zathura.PID-{pid}', '--object-path', '/org/pwmt/zathura', '-p']).decode()
 
