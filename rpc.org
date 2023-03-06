@@ -1,11 +1,10 @@
-#+TITLE: zathura rpc
-#+DESCRIPTION: discord rich presence for zathura
+#+TITLE: discord RPC for zathura
 #+AUTHOR: polarbear
 #+EMAIL: 71zenith@proton.me
 
-* only proceed if u don't mind severe autism
-
 [[file:preview.png]]
+
+** only proceed if u don't mind severe autism
 
 - requires =pypresence=
 - runs independently
