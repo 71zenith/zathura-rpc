@@ -8,8 +8,8 @@
 
 - requires =pypresence=
 - runs independently
-- will check for =zathura= every 15 seconds
-- if it doesnt work, then it doesnt :pepeshrug:
+- will check for =zathura= every 10 seconds
+- if it doesn't work, then it doesn't :pepeshrug:
 
 #+begin_src python :tangle main.py :shebang "#!/usr/bin/env python3"
 
@@ -17,40 +17,58 @@ from pypresence import Presence
 import time
 import subprocess
 import re
+import requests
 
-start = time.time()
-client_id = "1081997908985008138"
+url = 'https://0x0.st/'
+RPC = Presence("1081997908985008138")
 
-RPC = Presence(client_id)
-RPC.connect()
+while True:
+    try:
+        RPC.connect()
+        break
+    except:
+        time.sleep(10)
+        continue
 
 while True:
     try:
         pid = subprocess.check_output(['pidof', 'zathura']).decode().split()[0]
     except subprocess.CalledProcessError:
+        if 'start' in locals():
+            del start
         RPC.clear()
-        time.sleep(15)
+        time.sleep(10)
         continue
 
-    output = subprocess.check_output(['gdbus', 'introspect', '--session', '--dest', f'org.pwmt.zathura.PID-{pid}', '--object-path', '/org/pwmt/zathura', '-p']).decode()
+    if 'start' not in locals():
+        start = time.time()
 
-    filename = re.findall(r"filename = '([^']*)'", output)[0]
+    output = subprocess.check_output(['gdbus', 'introspect', '--session', '--dest', f'org.pwmt.zathura.PID-{pid}', '--object-path', '/org/pwmt/zathura', '-p']).decode()
+    path = re.search(r"(['\"])(/.*?)(\1)", output)[0].strip("'").strip('"')
     lineno = re.findall(r"pagenumber = ([0-9]*)", output)[0]
     totalln = re.findall(r"numberofpages = ([0-9]*)", output)[0]
 
-    # uncomment the next line and remove the one after that
-    # filename = re.findall(r'[^\/]+(?=\.)',filename)[0]
-    filename = re.findall(r'[^\/]+(?=\ - )',filename)[0]
+    # uncomment the next line and remove the one after that (only for personal use)
+    # filename = re.findall(r'[^\/]+(?=\.)',path)[0]
+    filename = re.findall(r'[^\/]+(?=\.)',path)[0]
+    directory = re.findall(r'^(.+/)',path)[0]
     line_info = (f"Page {lineno} of {totalln}")
 
+    # remove this if statement (only for personal use)
+    # or put a cover.jpg containing thumbnail in the directory where the file is
+    if 'path' != 'old_path':
+        with open(f"{directory}cover.jpg", 'rb') as f:
+            image = {'file': ('cover.jpg', f, 'image/jpeg')}
+            link = requests.post(url, files=image).text.strip()
+
+    old_path = path
+
     RPC.update(
-        large_image = "zathura",
+        large_image = link,
         large_text = "checkmate adobe plebs",
-        small_image = "weeb",
-        small_text = "yes, im a weeb",
         start = start,
         details = filename,
         state = line_info,
     )
-    time.sleep(15)
+    time.sleep(10)
 #+end_src
