@@ -50,7 +50,7 @@ while True:
 
     # uncomment the next line and remove the one after that (only for personal use)
     # filename = re.findall(r'[^\/]+(?=\.)',path)[0]
-    filename = re.findall(r'[^\/]+(?=\.)',path)[0]
+    filename = re.findall(r'[^\/]+(?=\ - )',path)[0]
     directory = re.findall(r'^(.+/)',path)[0]
     line_info = (f"Page {lineno} of {totalln}")
 
