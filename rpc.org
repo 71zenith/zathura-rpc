@@ -12,60 +12,58 @@
 - if it doesn't work, then it doesn't :pepeshrug:
 
 #+begin_src python :tangle main.py :shebang "#!/usr/bin/env python3"
-
 from pypresence import Presence
-import time
-import subprocess
-import re
 import os
+import re
 import requests
+import subprocess
+import time
+
+start_time = None
+old_path = None
 
 RPC = Presence("1081997908985008138")
 RPC.connect()
 
 while True:
     try:
-        pid = subprocess.check_output(['pidof', 'zathura']).decode().split()[0]
+        pid = subprocess.check_output(['pidof', 'zathura'], text=True).split()[0]
     except subprocess.CalledProcessError:
-        if 'start' in locals():
-            del start
+        start_time = None
         RPC.clear()
         time.sleep(10)
         continue
 
-    if 'start' not in locals():
-        start = time.time()
+    if start_time is None:
+        start_time = time.time()
 
-    output = subprocess.check_output(['gdbus', 'introspect', '--session', '--dest', f'org.pwmt.zathura.PID-{pid}', '--object-path', '/org/pwmt/zathura', '-p']).decode()
+    output = subprocess.check_output(['gdbus', 'introspect', '--session', '--dest', f'org.pwmt.zathura.PID-{pid}', '--object-path', '/org/pwmt/zathura', '-p'], text=True)
     path = re.search(r"(['\"])(/.*?)(\1)", output)[0].strip("'").strip('"')
     lineno = re.findall(r"pagenumber = ([0-9]*)", output)[0]
     totalln = re.findall(r"numberofpages = ([0-9]*)", output)[0]
 
-    # uncomment the next line and remove the one after that (only for personal use)
-    # filename = re.findall(r'[^\/]+(?=\.)',path)[0]
-    filename = re.findall(r'[^\/]+(?=\ - )',path)[0]
-    #directory = re.findall(r'^(.+/)',path)[0]
+    filename = os.path.splitext(os.path.basename(path))[0]
     directory = os.path.dirname(path)
-    line_info = (f"Page {lineno} of {totalln}")
 
-    # put a cover.jpg containing thumbnail in the directory where the file is
-    print(f"{directory}/cover.jpg")
+    line_info = f"Page {lineno} of {totalln}"
+
     if os.path.exists(f"{directory}/cover.jpg"):
-        if 'path' != 'old_path':
-            with open(f"{directory}cover.jpg", 'rb') as f:
+        if path != old_path:
+            with open(f"{directory}/cover.jpg", 'rb') as f:
                 image = {'file': ('cover.jpg', f, 'image/jpeg')}
                 link = requests.post("https://0x0.st/", files=image).text.strip()
     else:
         link = "zathura"
 
+    RPC.update(
+        large_image=link,
+        large_text="checkmate adobe plebs",
+        start=start_time,
+        details=filename,
+        state=line_info,
+    )
+
     old_path = path
 
-    RPC.update(
-        large_image = link,
-        large_text = "checkmate adobe plebs",
-        start = start,
-        details = filename,
-        state = line_info,
-    )
     time.sleep(10)
 #+end_src
