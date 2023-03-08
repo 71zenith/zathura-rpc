@@ -7,7 +7,7 @@
 ** only proceed if u don't mind severe autism
 
 - requires =pypresence=
-- for thumbnails, use this [[https://github.com/marianosimone/epub-thumbnailer][epub]]
+- for thumbnails, use this [[https://github.com/marianosimone/epub-thumbnailer][epub]] and [[https://imagemagick.org/index.php][pdf]]
 - if it doesn't work, then it doesn't :pepeshrug:
 
 #+begin_src python :tangle main.py :shebang "#!/usr/bin/env python3"
@@ -44,10 +44,14 @@ while True:
     filename = os.path.splitext(os.path.basename(path))[0].split(" - ")[0]
     directory = os.path.dirname(path)
 
-    # using epub-thumbnailer to autogen thumbnails (very inefficient , just a showcase)
-    # subprocess.Popen(['epub-thumbnailer' , path , f"{directory}/cover.jpg" , '1024'], stderr = open(os.devnull, "w"))
-
     line_info = f"Page {lineno} of {totalln}"
+
+    # comment this codeblock if u dont want to autogenerate covers (requires imagemagick, ghostscript, epub-thumbnailer)
+    if not os.path.exists(f"{directory}/cover.jpg"):
+        if path.endswith(".pdf"):
+            subprocess.run(['convert', '-thumbnail', '500' , f"{path}[0]", f"{directory}/cover.jpg"], stderr = subprocess.PIPE)
+        elif path.endswith(".epub") :
+            subprocess.run(['epub-thumbnailer' , path , f"{directory}/cover.jpg" , '1024'], stderr = subprocess.PIPE)
 
     if os.path.exists(f"{directory}/cover.jpg"):
         if path != old_path:
