@@ -17,18 +17,11 @@ from pypresence import Presence
 import time
 import subprocess
 import re
+import os
 import requests
 
-url = 'https://0x0.st/'
 RPC = Presence("1081997908985008138")
-
-while True:
-    try:
-        RPC.connect()
-        break
-    except:
-        time.sleep(10)
-        continue
+RPC.connect()
 
 while True:
     try:
@@ -51,15 +44,19 @@ while True:
     # uncomment the next line and remove the one after that (only for personal use)
     # filename = re.findall(r'[^\/]+(?=\.)',path)[0]
     filename = re.findall(r'[^\/]+(?=\ - )',path)[0]
-    directory = re.findall(r'^(.+/)',path)[0]
+    #directory = re.findall(r'^(.+/)',path)[0]
+    directory = os.path.dirname(path)
     line_info = (f"Page {lineno} of {totalln}")
 
-    # remove this if statement (only for personal use)
-    # or put a cover.jpg containing thumbnail in the directory where the file is
-    if 'path' != 'old_path':
-        with open(f"{directory}cover.jpg", 'rb') as f:
-            image = {'file': ('cover.jpg', f, 'image/jpeg')}
-            link = requests.post(url, files=image).text.strip()
+    # put a cover.jpg containing thumbnail in the directory where the file is
+    print(f"{directory}/cover.jpg")
+    if os.path.exists(f"{directory}/cover.jpg"):
+        if 'path' != 'old_path':
+            with open(f"{directory}cover.jpg", 'rb') as f:
+                image = {'file': ('cover.jpg', f, 'image/jpeg')}
+                link = requests.post("https://0x0.st/", files=image).text.strip()
+    else:
+        link = "zathura"
 
     old_path = path
 
