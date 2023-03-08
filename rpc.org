@@ -50,8 +50,8 @@ while True:
 
     if path != old_path:
         try :
-            os.path.dirname(path) == os.path.dirname(old_path)
-            os.remove(f"{directory}/cover.jpg")
+            if os.path.dirname(path) == os.path.dirname(old_path):
+                os.remove(f"{directory}/cover.jpg")
         except:
             pass
 
