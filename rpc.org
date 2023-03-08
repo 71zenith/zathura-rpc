@@ -10,9 +10,6 @@
 - for thumbnails, use this [[https://github.com/marianosimone/epub-thumbnailer][epub]] and [[https://imagemagick.org/index.php][pdf]]
 - if it doesn't work, then it doesn't :pepeshrug:
 
-- known issue
-  - [X] u need to manually delete cover.jpg after the program exits(not zathura)
-
 #+begin_src python :tangle main.py :shebang "#!/usr/bin/env python3"
 from pypresence import Presence
 import os
@@ -20,10 +17,18 @@ import re
 import requests
 import subprocess
 import time
+import atexit
 
 start_time = None
 old_path = None
 link = None
+convert = None
+
+def cleanup():
+    if convert is not None:
+        os.remove(f"{directory}/cover.jpg")
+
+atexit.register(cleanup)
 
 RPC = Presence("1081997908985008138")
 RPC.connect()
@@ -52,21 +57,21 @@ while True:
 
     if path != old_path:
         # comment upto `with` if u dont want to autogenerate covers (requires imagemagick, ghostscript, epub-thumbnailer)
-        try :
-            if os.path.dirname(path) == os.path.dirname(old_path):
-                os.remove(f"{directory}/cover.jpg")
-        except:
-            pass
+        if convert is not None:
+            os.remove(f"{os.path.dirname(old_path)}/cover.jpg")
 
         if not os.path.exists(f"{directory}/cover.jpg"):
             if path.endswith(".pdf"):
-                subprocess.run(['convert', '-thumbnail', '600' , f"{path}[0]", f"{directory}/cover.jpg"], stderr = subprocess.PIPE)
+                convert = subprocess.check_output(['convert', '-thumbnail', '600' , f"{path}[0]", f"{directory}/cover.jpg"],text=True)
             elif path.endswith(".epub"):
-                subprocess.run(['epub-thumbnailer' , path , f"{directory}/cover.jpg" , '600'], stderr = subprocess.PIPE)
+                convert = subprocess.check_output(['epub-thumbnailer' , path , f"{directory}/cover.jpg" , '600'],text=True)
+        else:
+            convert = None
 
         with open(f"{directory}/cover.jpg", 'rb') as f:
             image = {'file': ('cover.jpg', f, 'image/jpeg')}
             link = requests.post("https://0x0.st/", files=image).text.strip()
+
 
     if link is None:
         link = "zathura"
